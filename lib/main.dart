@@ -51,9 +51,11 @@ class _WeightScalePageState extends State<WeightScalePage> {
   final TextEditingController weight1Controller = TextEditingController();
   final TextEditingController weight2Controller = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   double netWeight = 0;
   bool hasCalculated = false;
+  String searchQuery = "";
 
   List<InvoiceModel> invoices = [];
   List<File> savedPDFFiles = [];
@@ -70,6 +72,7 @@ class _WeightScalePageState extends State<WeightScalePage> {
     weight1Controller.dispose();
     weight2Controller.dispose();
     descriptionController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -677,94 +680,142 @@ class _WeightScalePageState extends State<WeightScalePage> {
   }
 
   Widget _buildHistoryTab() {
-    return invoices.isEmpty
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.history,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'لا توجد فواتير محفوظة',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
+    final filteredInvoices = invoices.where((invoice) {
+      final truckMatch =
+          invoice.shipmentId.toLowerCase().contains(searchQuery.toLowerCase());
+      final dateMatch = DateFormat('yyyy-MM-dd', 'ar_SA')
+          .format(invoice.date)
+          .contains(searchQuery);
+      return truckMatch || dateMatch;
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: TextField(
+            controller: searchController,
+            onChanged: (value) {
+              setState(() {
+                searchQuery = value;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'البحث برقم الحمولة أو التاريخ...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        searchController.clear();
+                        setState(() {
+                          searchQuery = "";
+                        });
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: Colors.white70,
             ),
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: invoices.length,
-            itemBuilder: (context, index) {
-              final invoice = invoices[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(
-                    invoice.shipmentId,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+        ),
+        Expanded(
+          child: filteredInvoices.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 8),
+                      Icon(
+                        searchQuery.isEmpty ? Icons.history : Icons.search_off,
+                        size: 64,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 16),
                       Text(
-                        'صافي: ${invoice.netWeight.toStringAsFixed(2)} كجم',
+                        searchQuery.isEmpty
+                            ? 'لا توجد فواتير محفوظة'
+                            : 'لم يتم العثور على نتائج لـ "$searchQuery"',
                         style: TextStyle(
-                          color: Colors.blue.shade600,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: Colors.grey.shade600,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        DateFormat('yyyy-MM-dd HH:mm', 'ar_SA')
-                            .format(invoice.date),
-                        style: const TextStyle(fontSize: 12),
-                      ),
                     ],
                   ),
-                  trailing: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        child: const Text('حفظ PDF'),
-                        onTap: () => _savePDF(invoice),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: filteredInvoices.length,
+                  itemBuilder: (context, index) {
+                    final invoice = filteredInvoices[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      PopupMenuItem(
-                        child: const Text('طباعة'),
-                        onTap: () => _printInvoice(invoice),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        title: Text(
+                          invoice.shipmentId,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              'صافي: ${invoice.netWeight.toStringAsFixed(2)} كجم',
+                              style: TextStyle(
+                                color: Colors.blue.shade600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              DateFormat('yyyy-MM-dd HH:mm', 'ar_SA')
+                                  .format(invoice.date),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        trailing: PopupMenuButton(
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              child: const Text('حفظ PDF'),
+                              onTap: () => _savePDF(invoice),
+                            ),
+                            PopupMenuItem(
+                              child: const Text('طباعة'),
+                              onTap: () => _printInvoice(invoice),
+                            ),
+                            PopupMenuItem(
+                              child: const Text('مشاركة'),
+                              onTap: () => _shareInvoice(invoice),
+                            ),
+                            PopupMenuItem(
+                              child: const Text('حذف'),
+                              onTap: () {
+                                setState(() {
+                                  invoices.remove(invoice);
+                                });
+                                _showSuccess('تم حذف الفاتورة');
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      PopupMenuItem(
-                        child: const Text('مشاركة'),
-                        onTap: () => _shareInvoice(invoice),
-                      ),
-                      PopupMenuItem(
-                        child: const Text('حذف'),
-                        onTap: () {
-                          setState(() {
-                            invoices.removeAt(index);
-                          });
-                          _showSuccess('تم حذف الفاتورة');
-                        },
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          );
+        ),
+      ],
+    );
   }
 
   Widget _buildSavedFilesTab() {
