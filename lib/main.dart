@@ -68,15 +68,19 @@ class _WeightScalePageState extends State<WeightScalePage> {
   }
 
   Future<void> _loadData() async {
-    await _loadSavedPDFs();
-    await _loadInvoicesFromDB();
+    await Future.wait([
+      _loadSavedPDFs(),
+      _loadInvoicesFromDB(),
+    ]);
   }
 
   Future<void> _loadInvoicesFromDB() async {
     final dbInvoices = await DatabaseHelper().getInvoices();
-    setState(() {
-      invoices = dbInvoices;
-    });
+    if (mounted) {
+      setState(() {
+        invoices = dbInvoices;
+      });
+    }
   }
 
   @override
@@ -95,13 +99,15 @@ class _WeightScalePageState extends State<WeightScalePage> {
       final pdfDir = Directory('${directory.path}/invoices');
 
       if (await pdfDir.exists()) {
-        final files = pdfDir.listSync();
-        setState(() {
-          savedPDFFiles = files
-              .where((file) => file.path.endsWith('.pdf'))
-              .cast<File>()
-              .toList();
-        });
+        final entities = await pdfDir.list().toList();
+        if (mounted) {
+          setState(() {
+            savedPDFFiles = entities
+                .whereType<File>()
+                .where((file) => file.path.endsWith('.pdf'))
+                .toList();
+          });
+        }
       } else {
         await pdfDir.create(recursive: true);
       }

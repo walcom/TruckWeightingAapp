@@ -7,7 +7,7 @@ import Foundation
 
 import printing
 import share_plus
-import sqflite_darwin
+import sqflite
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   PrintingPlugin.register(with: registry.registrar(forPlugin: "PrintingPlugin"))
