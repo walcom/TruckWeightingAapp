@@ -66,5 +66,15 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>يريد التطبيق الوصول إلى مكتبة الصور لحفظ الفواتير</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>يريد التطبيق حفظ الفواتير في الصور</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>يريد التطبيق البحث عن طابعات على الشبكة</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ipp._tcp</string>
+	</array>
 </dict>
 </plist>
