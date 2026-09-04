@@ -1,0 +1,51 @@
+name: truck_weighting_capp2
+description: تطبيق متقدم لحساب أوزان الشحنات وتوليد فواتير PDF مع الحفظ والمشاركة
+
+publish_to: 'none'
+
+version: 2.0.0+2
+
+environment:
+  sdk: '>=2.19.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # المكتبات الأساسية
+  cupertino_icons: ^1.0.2
+  
+  # مكتبات PDF
+  pdf: ^3.10.0
+  printing: ^5.10.0
+  
+  # تنسيق التواريخ
+  intl: 0.20.2
+  
+  # حفظ الملفات
+  path_provider: ^2.0.14
+  
+  # مشاركة الملفات
+  share_plus: ^10.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # إذا أردت إضافة صور أو ملفات
+  # assets:
+  #   - assets/images/
+  #   - assets/data/
+
+  # الخطوط (اختياري)
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: assets/fonts/CustomFont.ttf
