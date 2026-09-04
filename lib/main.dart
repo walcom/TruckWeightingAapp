@@ -30,8 +30,8 @@ class WeightScaleApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        scaffoldBackgroundColor: const Color(0x87F1FFFA), // لون خلفية هادئ
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
+        scaffoldBackgroundColor: Colors.lightBlueAccent,
         useMaterial3: true,
       ),
       home: const WeightScalePage(),

@@ -30,6 +30,10 @@ dependencies:
   # مشاركة الملفات
   share_plus: ^10.1.0
 
+  # قواعد البيانات (SQLite)
+  sqflite: ^2.3.0
+  path: ^1.8.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
