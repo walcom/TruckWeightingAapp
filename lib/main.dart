@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'database_helper.dart';
 
 void main() {
   runApp(const WeightScaleApp());
@@ -63,7 +64,19 @@ class _WeightScalePageState extends State<WeightScalePage> {
   @override
   void initState() {
     super.initState();
-    _loadSavedPDFs();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadSavedPDFs();
+    await _loadInvoicesFromDB();
+  }
+
+  Future<void> _loadInvoicesFromDB() async {
+    final dbInvoices = await DatabaseHelper().getInvoices();
+    setState(() {
+      invoices = dbInvoices;
+    });
   }
 
   @override
@@ -127,8 +140,8 @@ class _WeightScalePageState extends State<WeightScalePage> {
       date: DateTime.now(),
     );
 
-    setState(() {
-      invoices.insert(0, invoice);
+    DatabaseHelper().insertInvoice(invoice).then((_) {
+      _loadInvoicesFromDB();
     });
 
     _showSuccess('تم حساب صافي الوزن بنجاح');
@@ -800,10 +813,12 @@ class _WeightScalePageState extends State<WeightScalePage> {
                             ),
                             PopupMenuItem(
                               child: const Text('حذف'),
-                              onTap: () {
-                                setState(() {
-                                  invoices.remove(invoice);
-                                });
+                              onTap: () async {
+                                await DatabaseHelper().deleteInvoice(
+                                  invoice.shipmentId,
+                                  invoice.date.toIso8601String(),
+                                );
+                                _loadInvoicesFromDB();
                                 _showSuccess('تم حذف الفاتورة');
                               },
                             ),
@@ -942,4 +957,15 @@ class InvoiceModel {
     required this.description,
     required this.date,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'shipmentId': shipmentId,
+      'weight1': weight1,
+      'weight2': weight2,
+      'netWeight': netWeight,
+      'description': description,
+      'date': date.toIso8601String(),
+    };
+  }
 }
